@@ -3,14 +3,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-// Fileira de cima — sistemas e aplicações full-stack
+// Fileira de cima — sistemas e aplicações full-stack (3 itens)
 const projectsRow1 = [
   { id: 1, title: 'Nordil ERP', category: 'Sistema ERP · Full Stack', image: '/images/projects/nordil-capa.png', link: '/projects/nordil-erp' },
   { id: 2, title: 'DentalReativa', category: 'SaaS · Full Stack', image: '/images/projects/dentalreative-capa.png', link: '/projects/dentalreativa' },
   { id: 3, title: 'Dashboard Logística', category: 'Dashboard Web', image: '/images/projects/dashboard-logistica.png', link: '/projects/dashboard-logistica' },
 ]
 
-// Fileira de baixo — os 5 dashboards de Power BI
+// Fileira de baixo — os 5 dashboards de Power BI (5 itens)
 const projectsRow2 = [
   { id: 4, title: 'Dashboard Comercial', category: 'Power BI', image: '/images/projects/dashboard-comercial.jpg', link: '/projects/dashboard-comercial' },
   { id: 5, title: 'Dashboard E-commerce', category: 'Power BI', image: '/images/projects/dashboard-ecommerce.jpg', link: '/projects/dashboard-ecommerce' },
@@ -20,12 +20,12 @@ const projectsRow2 = [
 ]
 
 export default function Projects() {
-  // Duplicamos as listas para garantir um efeito de loop contínuo perfeito
-  const doubleRow1 = [...projectsRow1, ...projectsRow1]
-  const doubleRow2 = [...projectsRow2, ...projectsRow2]
+  // Ajustamos a quantidade para que ambas as listas tenham 15 itens no total.
+  // Dessa forma, ambas terão exatamente a mesma largura em pixels e a mesma velocidade visual.
+  const doubleRow1 = [...projectsRow1, ...projectsRow1, ...projectsRow1, ...projectsRow1, ...projectsRow1] // 3 x 5 = 15 itens
+  const doubleRow2 = [...projectsRow2, ...projectsRow2, ...projectsRow2] // 5 x 3 = 15 itens
 
   return (
-    /* ALTERADO DE id="projetos" PARA id="projects" */
     <section id="projects" className="w-full py-24 bg-surface text-white overflow-hidden flex flex-col gap-12">
 
       {/* Cabeçalho */}

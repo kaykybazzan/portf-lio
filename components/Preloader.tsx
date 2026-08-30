@@ -17,7 +17,7 @@ const wordVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.035, // Atraso entre cada letra para criar o efeito onda
+      staggerChildren: 0.04, // Ritmo ligeiramente mais espaçado entre as letras
     },
   },
   exit: {
@@ -42,8 +42,8 @@ const letterVariants = {
     rotateX: 0,
     filter: 'blur(0px)',
     transition: {
-      duration: 0.5,
-      ease: [0.215, 0.61, 0.355, 1] as const, // Bezier extremamente suave
+      duration: 0.6, // Entrada um pouco mais cadenciada
+      ease: [0.215, 0.61, 0.355, 1] as const,
     },
   },
   exit: {
@@ -51,7 +51,7 @@ const letterVariants = {
     y: -18,
     filter: 'blur(6px)',
     transition: {
-      duration: 0.35,
+      duration: 0.4,
       ease: [0.55, 0.055, 0.675, 0.19] as const,
     },
   },
@@ -95,7 +95,8 @@ export default function Preloader({
           setIndex((prev) => prev + 1)
         }
       },
-      isLastWord ? 2000 : 1200
+      // Tempos aumentados para leitura mais confortável
+      isLastWord ? 3200 : 2200
     )
 
     return () => clearTimeout(timer)
@@ -115,7 +116,6 @@ export default function Preloader({
     },
   }
 
-  // Ajuste nos pontos SVG para garantir que a curva feche com fluidez ao sair
   const initialPath = `
     M0 0
     L${dimension.width} 0
