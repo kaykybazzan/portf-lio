@@ -1,69 +1,153 @@
 ﻿'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const words = [
-  "Olá",
-  "Hellou",
-  "Bonjour",
-  "स्वागत हे",
-  "Ciao",
-  "おい",
-  "Hallå",
-  "Guten tag",
-  "Hallo"
+  'E se',
+  'a peça',
+  'que falta',
+  'no seu negócio',
+  'estivesse',
+  'bem na sua frente?',
 ]
 
-export default function Preloader({ onComplete }: { onComplete?: () => void }) {
+// Variantes do contêiner da palavra (gerencia o ritmo da onda)
+const wordVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.035, // Atraso entre cada letra para criar o efeito onda
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.02,
+      staggerDirection: 1,
+    },
+  },
+}
+
+// Variantes de cada letra individual
+const letterVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+    rotateX: -45,
+    filter: 'blur(8px)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.5,
+      ease: [0.215, 0.61, 0.355, 1] as const, // Bezier extremamente suave
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -18,
+    filter: 'blur(6px)',
+    transition: {
+      duration: 0.35,
+      ease: [0.55, 0.055, 0.675, 0.19] as const,
+    },
+  },
+}
+
+export default function Preloader({
+  onComplete,
+}: {
+  onComplete?: () => void
+}) {
   const [index, setIndex] = useState(0)
-  const [dimension, setDimension] = useState({ width: 0, height: 0 })
+  const [dimension, setDimension] = useState({
+    width: 0,
+    height: 0,
+  })
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDimension({ width: window.innerWidth, height: window.innerHeight })
+    const updateDimension = () => {
+      setDimension({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+
+    updateDimension()
+    window.addEventListener('resize', updateDimension)
+
+    return () => {
+      window.removeEventListener('resize', updateDimension)
     }
   }, [])
 
   useEffect(() => {
-    if (index === words.length - 1) {
-      setTimeout(() => {
-        if (onComplete) onComplete()
-      }, 300)
-      return
-    }
+    const isLastWord = index === words.length - 1
 
-    const timer = setTimeout(() => {
-      setIndex((prev) => prev + 1)
-    }, index === 0 ? 1000 : 180)
+    const timer = setTimeout(
+      () => {
+        if (isLastWord) {
+          onComplete?.()
+        } else {
+          setIndex((prev) => prev + 1)
+        }
+      },
+      isLastWord ? 2000 : 1200
+    )
 
     return () => clearTimeout(timer)
   }, [index, onComplete])
 
-  // Animação de subida do container principal
   const slideUp = {
     initial: {
-      y: 0
+      y: 0,
     },
     exit: {
-      y: "-100vh",
-      transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] as const, delay: 0.2 }
-    }
+      y: '-100vh',
+      transition: {
+        duration: 0.85,
+        ease: [0.76, 0, 0.24, 1] as const,
+        delay: 0.1,
+      },
+    },
   }
 
-  // Caminho do SVG: Começa reto e se curva para cima na saída
-  const initialPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${dimension.height} Q${dimension.width / 2} ${dimension.height + 300} 0 ${dimension.height}  Z`
-  const targetPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${dimension.height} Q${dimension.width / 2} ${dimension.height} 0 ${dimension.height}  Z`
+  // Ajuste nos pontos SVG para garantir que a curva feche com fluidez ao sair
+  const initialPath = `
+    M0 0
+    L${dimension.width} 0
+    L${dimension.width} ${dimension.height}
+    Q${dimension.width / 2} ${dimension.height + 300} 0 ${dimension.height}
+    Z
+  `
+
+  const targetPath = `
+    M0 0
+    L${dimension.width} 0
+    L${dimension.width} ${dimension.height}
+    Q${dimension.width / 2} ${dimension.height} 0 ${dimension.height}
+    Z
+  `
 
   const curve = {
     initial: {
       d: initialPath,
-      transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] as const }
+      transition: {
+        duration: 0.8,
+        ease: [0.76, 0, 0.24, 1] as const,
+      },
     },
     exit: {
       d: targetPath,
-      transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] as const, delay: 0.3 }
-    }
+      transition: {
+        duration: 0.8,
+        ease: [0.76, 0, 0.24, 1] as const,
+        delay: 0.3,
+      },
+    },
   }
 
   return (
@@ -73,20 +157,41 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
       exit="exit"
       className="fixed inset-0 z-[999] flex items-center justify-center bg-[#141516] text-white"
     >
-      {/* Texto central de saudações */}
-      <div className="flex items-center text-3xl md:text-5xl font-light z-10">
-        <span className="mr-3 block h-3 w-3 rounded-full bg-white"></span>
-        <p>{words[index]}</p>
+      <div className="relative z-10 flex h-[180px] w-full items-center justify-center px-8 text-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            variants={wordVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="flex flex-wrap justify-center origin-center text-3xl font-light md:text-5xl"
+            style={{ perspective: 1000 }}
+          >
+            {words[index].split('').map((char, charIdx) => (
+              <motion.span
+                key={`${char}-${charIdx}`}
+                variants={letterVariants}
+                className="inline-block"
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </motion.span>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* SVG responsável pelo efeito de curva arco na borda inferior */}
       {dimension.height > 0 && (
-        <svg className="absolute top-0 w-full h-[calc(100%+300px)] pointer-events-none fill-[#141516]">
+        <svg
+          className="pointer-events-none absolute top-0 h-[calc(100%+300px)] w-full fill-[#141516]"
+          viewBox={`0 0 ${dimension.width} ${dimension.height + 300}`}
+          preserveAspectRatio="none"
+        >
           <motion.path
             variants={curve}
             initial="initial"
             exit="exit"
-          ></motion.path>
+          />
         </svg>
       )}
     </motion.div>
