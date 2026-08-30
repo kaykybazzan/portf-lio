@@ -1,84 +1,104 @@
-# Kayky Bazzan — Portfólio (Next.js)
+# Kayky Bazzan — Portfólio
 
-Projeto completo, pronto para rodar. A identidade visual segue a referência do Dennis
-Snellenberg (cortina de transição, saudações no loader, marquee, hover magnético), mas
-com o bug de "cortina fantasma" corrigido na raiz — veja a seção **Sobre a cortina**
-abaixo se quiser entender o porquê.
+Site pessoal / portfólio, construído em Next.js, reunindo os projetos que venho desenvolvendo: sistemas full-stack (Nordil ERP, DentalReativa, Dashboard Logística) e dashboards de análise de dados em Power BI.
 
-## Como rodar
+Demonstração: [em breve]
+
+## Sobre o projeto
+
+Estrutura, animações e conteúdo foram desenvolvidos com apoio de IA (Claude), sob minha direção — decisões de design, revisão de código e conteúdo de cada projeto são meus. O objetivo foi apresentar cada trabalho da forma mais honesta possível, deixando claro o que cada um resolve, quais decisões técnicas foram tomadas e quais são as limitações reais.
+
+## Funcionalidades
+
+- Preloader com sequência de saudação multilíngue e transição de cortina ao entrar no site
+- Hero com foto, badge de disponibilidade e navegação por âncora
+- Seção Sobre Mim com stack em destaque
+- Grid de projetos com duas fileiras animadas (sistemas full-stack e dashboards Power BI), separadas por categoria
+- Página de detalhe dinâmica por projeto (`/projects/[slug]`), com dois templates diferentes dependendo do tipo:
+  - **Case study completo** (sistemas): capa, problema, solução, stack, resultado, galeria de telas e links pro projeto no ar / repositório
+  - **Template enxuto** (dashboards Power BI): imagem grande do relatório, descrição e medidas de destaque
+- Transição de página (cortina) entre a home e as páginas de projeto
+- Navegação sequencial entre projetos ("Próximo projeto") e CTA de contato ao final de cada página
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js (App Router) |
+| Linguagem | TypeScript |
+| Estilização | Tailwind CSS |
+| Animação | Framer Motion |
+| Ícones | Lucide React |
+| Deploy | Vercel |
+
+## Estrutura do projeto
+
+```
+portfolio
+├── app/
+│   ├── page.tsx                 # Home (Hero, Sobre, Projetos, Contato)
+│   ├── template.tsx             # Transição de página
+│   └── projects/
+│       └── [slug]/
+│           └── page.tsx         # Rota dinâmica de detalhe de projeto
+├── components/
+│   ├── Hero.tsx
+│   ├── About.tsx
+│   ├── Projects.tsx
+│   ├── Footer.tsx
+│   ├── Preloader.tsx
+│   ├── PageTransition.tsx
+│   ├── TransitionContext.tsx
+│   └── projects/
+│       ├── CaseStudyLayout.tsx  # Template de sistemas
+│       ├── DashboardLayout.tsx  # Template de dashboards
+│       ├── ProjectNav.tsx       # Navegação entre projetos
+│       └── ContactCTA.tsx       # CTA de contato
+├── lib/
+│   └── projects-data.ts         # Dados de todos os projetos
+└── public/
+    └── images/
+        └── projects/
+```
+
+## Como rodar localmente
+
+Pré-requisitos: Node.js 20+
 
 ```bash
+# 1. Clonar o repositório
+git clone https://github.com/kaykybazzan/portfolio.git
+cd portfolio
+
+# 2. Instalar dependências
 npm install
+
+# 3. Rodar em desenvolvimento
 npm run dev
 ```
 
-Acesse `http://localhost:3000`.
+Abra [http://localhost:3000](http://localhost:3000).
 
-## O que já está pronto (comportamento, não visual)
+## Adicionando um novo projeto
 
-- Loader com saudações multilíngues no primeiro carregamento (uma vez por sessão, via `sessionStorage`).
-- Transição de página em cortina, com o `TransitionLink` fechando a cortina antes de navegar
-  e o `app/template.tsx` reabrindo na página nova — sem nenhum elemento "sobrando" na tela.
-- Scroll suave real via **Lenis**, sincronizado com o **GSAP ScrollTrigger**.
-- Revelação de textos/seções ao rolar (`<Reveal>`).
-- Botões e links com efeito magnético (`<Magnetic>`).
-- Marquee com fade nas bordas e pausa suave no hover.
-- Cursor customizado (dot que segue o mouse, cresce sobre links/botões — só em telas com mouse).
-- Página de cada projeto (`/trabalho/[slug]`) gerada a partir de `lib/projects.ts`.
-- Página `/dados` para os projetos de Power BI (grid compacto, sem competir com os 3 projetos principais).
-- Página `/sobre` com a narrativa completa.
-- 404 customizado, foco visível no teclado, `prefers-reduced-motion` respeitado.
+Todo o conteúdo dos projetos vive em `lib/projects-data.ts`. Pra adicionar um novo:
 
-## O que falta — e é só isso
+1. Cria uma nova entrada no objeto `projectsData`, com `type: 'system'` (case study completo) ou `type: 'dashboard'` (template enxuto)
+2. Adiciona o `slug` na lista `projectOrder`, na posição desejada
+3. Coloca as imagens em `public/images/projects/`
 
-1. **Imagens.** Todo lugar com `<ImagePlaceholder />` é intencional: sua foto no Hero,
-   a capa de cada projeto (`/trabalho/[slug]`) e os 5 cards de `/dados`. Troque o componente
-   por `<Image src="..." />` (de `next/image`) quando tiver os arquivos — os caminhos sugeridos
-   já estão em `lib/projects.ts` (`cover: '/images/projects/...'`), é só colocar os arquivos em
-   `public/images/projects/`.
-2. **Links reais.** `mailto:seu-email@exemplo.com`, `github.com/seu-usuario` e
-   `linkedin.com/in/seu-usuario` aparecem em `components/Footer.tsx` e em `lib/projects.ts`
-   (campo `githubUrl`). Trocar por dados reais antes de publicar.
-3. **`metadataBase`** em `app/layout.tsx` está apontando para um domínio de exemplo
-   (`kaykybazzan.dev`) — troque pelo domínio real quando o projeto for publicado (Vercel, etc.),
-   ou remova a linha se ainda não tiver domínio definido.
+O roteador (`app/projects/[slug]/page.tsx`) escolhe automaticamente o template certo com base no `type`.
 
-## Sobre a cortina (o bug que você tinha)
+## Status
 
-No código original, a "borda curva" da cortina era um `<div>` filho, posicionado com
-`bottom-0` + `translate-y-full` dentro de um elemento pai que só se movia (nunca era
-escondido de fato). Isso fazia a curva sobrar fixa na tela, sobrepondo o menu e o
-conteúdo — exatamente o que aparecia nos seus prints.
+Em desenvolvimento ativo. Conteúdo dos projetos sendo preenchido e refinado.
 
-Aqui a cortina é **um único elemento**: a curva não é um filho separado, é o próprio
-`border-radius` do elemento sendo animado no fim da transição. Não existe pedaço
-"escapando" do retângulo principal porque não existe um segundo elemento.
+## Autor
 
-## Estrutura
+Kayky Bazzan
+LinkedIn: [linkedin.com/in/kaykybazzan](https://www.linkedin.com/in/kaykybazzan)
+GitHub: [github.com/kaykybazzan](https://github.com/kaykybazzan)
 
-```
-app/
-  layout.tsx        → fontes, providers, loader, nav
-  template.tsx       → reabre a cortina a cada navegação
-  page.tsx            → home
-  sobre/page.tsx
-  dados/page.tsx
-  trabalho/[slug]/page.tsx
-  not-found.tsx
-components/
-  TransitionProvider.tsx  → dono único da cortina
-  TransitionLink.tsx      → link que fecha a cortina antes de navegar
-  Loader.tsx
-  SmoothScroll.tsx        → Lenis + ScrollTrigger
-  CustomCursor.tsx
-  Magnetic.tsx
-  Reveal.tsx
-  Marquee.tsx
-  Nav.tsx
-  Hero.tsx
-  ProjectRow.tsx
-  Footer.tsx
-  ImagePlaceholder.tsx
-lib/
-  projects.ts        → conteúdo dos 3 projetos principais + 5 de dados
-```
+## Licença
+
+Proprietário — todos os direitos reservados © 2026
